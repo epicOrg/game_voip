@@ -1,0 +1,12 @@
+<resources>
+    <string name="title_activity_registration">Register</string>
+
+    <!-- Strings related to login -->
+
+    <string name="prompt_email">Email</string>
+    <string name="prompt_confirm_password">Conferma password</string>
+    <string name="action_registration">Registrati</string>
+
+    <string name="error_passwords_different">Le password non coincidono</string>
+
+</resources>
