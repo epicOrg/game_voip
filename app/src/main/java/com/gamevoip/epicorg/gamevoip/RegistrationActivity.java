@@ -27,6 +27,7 @@ import java.io.PrintWriter;
 import java.net.InetAddress;
 import java.net.Socket;
 
+import communication.CustomAlertDialog;
 import communication.ServerCommunicationReciver;
 import data.RegistrationData;
 
@@ -231,7 +232,7 @@ public class RegistrationActivity extends Activity {
             mAuthTask = null;
 
             if (success) {
-                Intent intent = new Intent(thisActivity, MainActivity.class);
+                Intent intent = new Intent(thisActivity, CallActivity.class);
                 intent.putExtra("Username", registrationData.getUsername());
                 startActivity(intent);
             } else {
@@ -240,18 +241,9 @@ public class RegistrationActivity extends Activity {
             }
         }
         private void showErrorDialog() {
-            AlertDialog.Builder builder = new AlertDialog.Builder(thisActivity);
-            AlertDialog dialog;
-            builder.setMessage(error)
-                    .setTitle(R.string.dialog_error);
-            builder.setPositiveButton(getString(R.string.dialog_try_again), new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialog, int which) {
-                    dialog.cancel();
-                }
-            });
-            dialog = builder.create();
-            dialog.show();
+            new CustomAlertDialog(getString(R.string.dialog_error)
+                    ,error, getString(R.string.dialog_try_again),
+                    thisActivity).show();
         }
 
         @Override

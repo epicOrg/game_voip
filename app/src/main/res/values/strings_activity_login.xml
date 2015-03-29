@@ -7,6 +7,7 @@
     <string name="action_log_in">Login</string>
     <string name="action_sign_in_short">Sign in</string>
     <string name="action_not_registered">Non sei registrato?</string>
+    <string name="action_remember_me">Ricordami</string>
 
     <string name="error_invalid_email">This email address is invalid</string>
     <string name="error_invalid_password">Deve contenere almeno un numero e una letttera</string>
