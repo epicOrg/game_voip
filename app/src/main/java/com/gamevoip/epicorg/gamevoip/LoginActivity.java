@@ -4,24 +4,31 @@ import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.annotation.TargetApi;
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.text.TextUtils;
-import android.view.KeyEvent;
+import android.util.Log;
 import android.view.View;
-import android.view.inputmethod.EditorInfo;
 import android.widget.EditText;
 import android.widget.TextView;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.InetAddress;
 import java.net.Socket;
+
+import communication.ServerCommunicationReciver;
+import data.LoginData;
 
 /**
  * A login screen that offers login via email/password.
@@ -32,8 +39,8 @@ public class LoginActivity extends Activity{
      * Keep track of the login task to ensure we can cancel it if requested.
      */
     private UserLoginTask mAuthTask = null;
+    private LoginActivity thisActivity = this;
 
-    // UI references.
     private EditText mUsernameView;
     private EditText mPasswordView;
     private View mProgressView;
@@ -47,19 +54,36 @@ public class LoginActivity extends Activity{
         // Set up the login form.
         mUsernameView = (EditText) findViewById(R.id.username);
         mPasswordView = (EditText) findViewById(R.id.password);
-        /**mPasswordView.setOnEditorActionListener(new TextView.OnEditorActionListener() {
-            @Override
-            public boolean onEditorAction(TextView textView, int id, KeyEvent keyEvent) {
-                if (id == R.id.login || id == EditorInfo.IME_NULL) {
-                    attemptLogin();
-                    return true;
-                }
-                return false;
-            }
-        });*/
-
         mLoginFormView = findViewById(R.id.login_form);
         mProgressView = findViewById(R.id.login_progress);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        /**
+        SharedPreferences preferences = getPreferences(MODE_PRIVATE);
+
+        System.out.println(preferences.getBoolean("Logged", false));
+        if(preferences.getBoolean("Logged",false)){
+
+            Intent intent = new Intent(thisActivity, MainActivity.class);
+            intent.putExtra("Username", preferences.getString("Username", null));
+            intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+            startActivity(intent);
+        }*/
+    }
+
+    @Override
+    protected void onDestroy() {
+        SharedPreferences preferences = getPreferences(MODE_PRIVATE);
+        SharedPreferences.Editor editor = preferences.edit();
+
+        editor.putBoolean("Logged", false);
+        editor.commit();
+        super.onDestroy();
+
+
     }
 
     public void notRegistered(View view){
@@ -163,6 +187,7 @@ public class LoginActivity extends Activity{
     public class UserLoginTask extends AsyncTask<Void, Void, Boolean> {
 
         private LoginData loginData;
+        private String error;
 
         public UserLoginTask(LoginData loginData) {
             this.loginData = loginData;
@@ -178,38 +203,66 @@ public class LoginActivity extends Activity{
             try {
                 Socket socket = new Socket(InetAddress.getByName("192.168.1.4"), 7007);
                 PrintWriter printWriter = new PrintWriter(socket.getOutputStream(),true);
-                try {
-                    loginRequest.put("service", "LOGIN");
-                    loginRequest.put("username", loginData.getUsername());
-                    loginRequest.put("password", loginData.getPassword());
-
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                    return false;
-                }
-
-                System.out.println(loginRequest.toString());
-
+                loginRequest.put("service", "LOGIN");
+                loginRequest.put("username", loginData.getUsername());
+                loginRequest.put("password", loginData.getPassword());
                 printWriter.println(loginRequest.toString());
+                Log.d("Richiesta",loginRequest.toString());
+                BufferedReader reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+                JSONObject response = new JSONObject(reader.readLine());
+                Log.d("Risposta", response.toString());
+
+                reader.close();
+                boolean value = response.getBoolean("value");
+                if(!value){
+                    error = response.getString("Description");
+                }else {
+                    new ServerCommunicationReciver(socket).run();
+                }
+                return value;
 
             } catch (IOException e) {
                 e.printStackTrace();
+                error = getString(R.string.error_server_unreachable);
+                return false;
+            } catch (JSONException e) {
+                e.printStackTrace();
+                error = getString(R.string.error_communication);
+                return false;
             }
-            // TODO: register the new account here.
-            return true;
         }
 
         @Override
         protected void onPostExecute(final Boolean success) {
             mAuthTask = null;
-            showProgress(false);
+
 
             if (success) {
-                finish();
+                Intent intent = new Intent(thisActivity, MainActivity.class);
+                intent.putExtra("Username", loginData.getUsername());
+                intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                startActivity(intent);
             } else {
-                mPasswordView.setError(getString(R.string.error_incorrect_password));
-                mPasswordView.requestFocus();
+                showErrorDialog();
+                showProgress(false);
+
             }
+            showProgress(false);
+        }
+
+        private void showErrorDialog() {
+            AlertDialog.Builder builder = new AlertDialog.Builder(thisActivity);
+            AlertDialog dialog;
+            builder.setMessage(error)
+                    .setTitle(R.string.dialog_error);
+            builder.setPositiveButton(getString(R.string.dialog_try_again), new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    dialog.cancel();
+                }
+            });
+            dialog = builder.create();
+            dialog.show();
         }
 
         @Override

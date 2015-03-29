@@ -13,4 +13,9 @@
     <string name="error_short_password">Deve contenere almeno 8 caratteri</string>
     <string name="error_incorrect_password">This password is incorrect</string>
     <string name="error_field_required">This field is required</string>
+    <string name="error_server_unreachable">Impossibile comunicare col server</string>
+    <string name="error_communication">Impossibile comunicare correttamente col server</string>
+
+    <string name="dialog_error">Errore</string>
+    <string name="dialog_try_again">Riprova</string>
 </resources>

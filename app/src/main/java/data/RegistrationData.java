@@ -1,4 +1,6 @@
-package com.gamevoip.epicorg.gamevoip;
+package data;
+
+import data.LoginData;
 
 /**
  * Created by Luca on 27/03/2015.

@@ -4,24 +4,31 @@ import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.annotation.TargetApi;
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.content.DialogInterface;
+import android.content.Intent;
 import android.os.AsyncTask;
 
 import android.os.Build;
 import android.os.Bundle;
 import android.text.TextUtils;
-import android.view.KeyEvent;
+import android.util.Log;
 import android.view.View;
-import android.view.inputmethod.EditorInfo;
 import android.widget.EditText;
 import android.widget.TextView;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.InetAddress;
 import java.net.Socket;
+
+import communication.ServerCommunicationReciver;
+import data.RegistrationData;
 
 /**
  * A login screen that offers login via email/password.
@@ -32,8 +39,8 @@ public class RegistrationActivity extends Activity {
      * Keep track of the login task to ensure we can cancel it if requested.
      */
     private UserRegistrationTask mAuthTask = null;
+    private RegistrationActivity thisActivity = this;
 
-    // UI references.
     private EditText mUsernameView;
     private EditText mEmailView;
     private EditText mPasswordView;
@@ -175,8 +182,8 @@ public class RegistrationActivity extends Activity {
      * Task asincrono di Registrazione nel quale viene gestita a logica di comunicazione col server
      */
     public class UserRegistrationTask extends AsyncTask<Void, Void, Boolean> {
-
         private RegistrationData registrationData;
+        private String error;
 
         public UserRegistrationTask(RegistrationData registrationData) {
             this.registrationData = registrationData;
@@ -188,38 +195,63 @@ public class RegistrationActivity extends Activity {
             try {
                 Socket socket = new Socket(InetAddress.getByName("192.168.1.4"), 7007);
                 PrintWriter printWriter = new PrintWriter(socket.getOutputStream(),true);
-                try {
-                    registrationRequest.put("service", "REGISTER");
-                    registrationRequest.put("email", registrationData.getEmail());
-                    registrationRequest.put("username", registrationData.getUsername());
-                    registrationRequest.put("password", registrationData.getPassword());
 
-
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                    return false;
-                }
+                registrationRequest.put("service", "REGISTER");
+                registrationRequest.put("email", registrationData.getEmail());
+                registrationRequest.put("username", registrationData.getUsername());
+                registrationRequest.put("password", registrationData.getPassword());
+                Log.d("Richiesta", registrationRequest.toString());
                 printWriter.println(registrationRequest.toString());
+                BufferedReader reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+                JSONObject response = new JSONObject(reader.readLine());
+                Log.d("Risposta", response.toString());
+
+                reader.close();
+
+                boolean value = response.getBoolean("value");
+                if(!value){
+                    error = response.getString("Description");
+                }else {
+                    new ServerCommunicationReciver(socket).run();
+                }
+                return value;
 
             } catch (IOException e) {
-                e.printStackTrace();
+                error = getString(R.string.error_server_unreachable);
+                return false;
+            } catch (JSONException e) {
+                error = getString(R.string.error_communication);
+                return false;
             }
-
-            // TODO: register the new account here.
-            return true;
         }
+
 
         @Override
         protected void onPostExecute(final Boolean success) {
             mAuthTask = null;
-            showProgress(false);
 
             if (success) {
-                finish();
+                Intent intent = new Intent(thisActivity, MainActivity.class);
+                intent.putExtra("Username", registrationData.getUsername());
+                startActivity(intent);
             } else {
-                mPasswordView.setError(getString(R.string.error_incorrect_password));
-                mPasswordView.requestFocus();
+                showErrorDialog();
+                showProgress(false);
             }
+        }
+        private void showErrorDialog() {
+            AlertDialog.Builder builder = new AlertDialog.Builder(thisActivity);
+            AlertDialog dialog;
+            builder.setMessage(error)
+                    .setTitle(R.string.dialog_error);
+            builder.setPositiveButton(getString(R.string.dialog_try_again), new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    dialog.cancel();
+                }
+            });
+            dialog = builder.create();
+            dialog.show();
         }
 
         @Override

@@ -1,4 +1,4 @@
-package com.gamevoip.epicorg.gamevoip;
+package data;
 
 /**
  * Created by Luca on 27/03/2015.
