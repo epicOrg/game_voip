@@ -1,21 +1,28 @@
 package com.gamevoip.epicorg.gamevoip;
 
+import android.annotation.TargetApi;
 import android.content.Context;
 import android.content.Intent;
 import android.media.AudioManager;
+import android.os.Build;
 import android.os.Handler;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.Toast;
 
+import java.io.IOException;
+import java.net.InetAddress;
+import java.net.Socket;
 import java.net.SocketException;
 import java.net.UnknownHostException;
 
 import call.CallManager;
+import communication.CommunicationManager;
 import communication.CustomAlertDialog;
 
 
@@ -23,12 +30,14 @@ public class CallActivity extends ActionBarActivity {
 
     private boolean _doubleBackToExitPressedOnce = false;
     private CallManager callManager;
+    private CommunicationManager communicationManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_call);
         callManager = CallManager.getInstance();
+        communicationManager = CommunicationManager.getInstance();
     }
 
 
@@ -60,6 +69,7 @@ public class CallActivity extends ActionBarActivity {
         }, 2000);
     }
 
+    @TargetApi(Build.VERSION_CODES.KITKAT)
     public void call(View view){
 
         String username = ((EditText) findViewById(R.id.user_call) ).getText().toString();

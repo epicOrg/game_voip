@@ -22,5 +22,6 @@
         android:text="@string/action_call"
         android:id="@+id/call"
         android:layout_below="@+id/user_call"
-        android:layout_centerHorizontal="true" />
+        android:layout_centerHorizontal="true"
+        android:onClick="call" />
 </RelativeLayout>

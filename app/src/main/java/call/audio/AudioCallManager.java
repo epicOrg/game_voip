@@ -11,6 +11,8 @@ import java.net.InetAddress;
 import java.net.SocketException;
 import java.net.UnknownHostException;
 
+import communication.CommunicationManager;
+
 /**
  * Created by Luca on 30/03/2015.
  */
@@ -33,7 +35,8 @@ public class AudioCallManager {
     }
 
     public AudioStream newAudioStream() throws SocketException, UnknownHostException {
-        AudioStream audioStream = new AudioStream(InetAddress.getLocalHost());
+        AudioStream audioStream = new AudioStream(InetAddress.getByName(
+                CommunicationManager.getLocalIpAddress()));
         audioStream.setCodec(AudioCodec.AMR);
         audioStream.setMode(RtpStream.MODE_NORMAL);
         audioStream.join(audioGroup);
@@ -41,5 +44,6 @@ public class AudioCallManager {
     }
 
     public void setAudio(){
+        //TODO
     }
 }
