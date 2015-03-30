@@ -1,4 +1,4 @@
-package communication;
+package interaction;
 
 import android.app.Activity;
 import android.app.AlertDialog;

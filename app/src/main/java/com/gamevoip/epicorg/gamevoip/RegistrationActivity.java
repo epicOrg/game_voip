@@ -4,8 +4,6 @@ import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.annotation.TargetApi;
 import android.app.Activity;
-import android.app.AlertDialog;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.AsyncTask;
 
@@ -15,7 +13,6 @@ import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
-import android.widget.TextView;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -27,7 +24,7 @@ import java.io.PrintWriter;
 import java.net.InetAddress;
 import java.net.Socket;
 
-import communication.CustomAlertDialog;
+import interaction.CustomAlertDialog;
 import communication.ServerCommunicationReciver;
 import data.RegistrationData;
 
@@ -212,8 +209,6 @@ public class RegistrationActivity extends Activity {
                 boolean value = response.getBoolean("value");
                 if(!value){
                     error = response.getString("Description");
-                }else {
-                    new ServerCommunicationReciver(socket).run();
                 }
                 return value;
 

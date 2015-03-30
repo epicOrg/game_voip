@@ -16,4 +16,5 @@
 
     <string name="action_example">Example action</string>
     <string name="title_activity_call">CallActivity</string>
+    <string name="dialog_net_error">Errore di rete, l\'applicazione terminerà</string>
 </resources>
