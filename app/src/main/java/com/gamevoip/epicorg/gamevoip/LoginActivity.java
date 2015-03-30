@@ -14,6 +14,8 @@ import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
+import android.widget.Button;
+import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.TextView;
 
@@ -46,6 +48,7 @@ public class LoginActivity extends Activity{
     private EditText mPasswordView;
     private View mProgressView;
     private View mLoginFormView;
+    private SharedPreferences myPreferences;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -57,34 +60,15 @@ public class LoginActivity extends Activity{
         mPasswordView = (EditText) findViewById(R.id.password);
         mLoginFormView = findViewById(R.id.login_form);
         mProgressView = findViewById(R.id.login_progress);
-    }
 
-    @Override
-    protected void onResume() {
-        super.onResume();
-        /**
-        SharedPreferences preferences = getPreferences(MODE_PRIVATE);
-
-        System.out.println(preferences.getBoolean("Logged", false));
-        if(preferences.getBoolean("Logged",false)){
-
-            Intent intent = new Intent(thisActivity, MainActivity.class);
-            intent.putExtra("Username", preferences.getString("Username", null));
-            intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-            startActivity(intent);
-        }*/
-    }
-
-    @Override
-    protected void onDestroy() {
-        SharedPreferences preferences = getPreferences(MODE_PRIVATE);
-        SharedPreferences.Editor editor = preferences.edit();
-
-        editor.putBoolean("Logged", false);
-        editor.commit();
-        super.onDestroy();
-
-
+        myPreferences = getPreferences(MODE_PRIVATE);
+        if(myPreferences.getBoolean("Remember", false)){
+            mUsernameView.setText(myPreferences.getString("Username","user"));
+            mPasswordView.setText(myPreferences.getString("Password", "pass"));
+            Log.d("USER_REMEMBER", myPreferences.getString("Username","user"));
+            Log.d("PASS_REMEMBER", myPreferences.getString("Password","pass"));
+            attemptLogin(findViewById(R.id.login));
+        }
     }
 
     public void notRegistered(View view){
@@ -93,11 +77,18 @@ public class LoginActivity extends Activity{
         startActivity(intent);
     }
 
-    /**
-     * Attempts to sign in or register the account specified by the login form.
-     * If there are form errors (invalid email, missing fields, etc.), the
-     * errors are presented and no actual login attempt is made.
-     */
+    public void rememberMe(View view){
+        CheckBox rememberBox = (CheckBox) findViewById(R.id.remeberMeBox);
+        myPreferences = getPreferences(MODE_PRIVATE);
+        SharedPreferences.Editor editor = myPreferences.edit();
+        Log.d("REMEMBER_ME", String.valueOf(rememberBox.isChecked()));
+        if(rememberBox.isChecked())
+            editor.putBoolean("Remember" , true);
+        else
+            editor.putBoolean("Remember", false);
+        editor.commit();
+    }
+
     public void attemptLogin(View view) {
         if (mAuthTask != null) {
             return;
@@ -236,9 +227,14 @@ public class LoginActivity extends Activity{
         @Override
         protected void onPostExecute(final Boolean success) {
             mAuthTask = null;
-
-
             if (success) {
+                if(myPreferences.getBoolean("Remember",false)) {
+                    SharedPreferences.Editor editor = myPreferences.edit();
+                    editor.putString("Username", loginData.getUsername());
+                    editor.putString("Password", loginData.getPassword());
+                    editor.commit();
+                    Log.d("REMEMBER", "fields saved");
+                }
                 Intent intent = new Intent(thisActivity, CallActivity.class);
                 intent.putExtra("Username", loginData.getUsername());
                 intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);

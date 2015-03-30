@@ -36,7 +36,8 @@
                 android:layout_height="wrap_content"
                 android:text="@string/action_remember_me"
                 android:id="@+id/remeberMeBox"
-                android:checked="false" />
+                android:checked="false"
+                android:onClick="rememberMe" />
 
             <Button android:id="@+id/log_in" style="?android:textAppearanceSmall"
                 android:layout_width="match_parent" android:layout_height="wrap_content"
