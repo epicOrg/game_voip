@@ -1,6 +1,7 @@
 package communication;
 
 import android.app.Activity;
+import android.content.Context;
 import android.util.Log;
 
 import com.gamevoip.epicorg.gamevoip.R;
@@ -21,6 +22,12 @@ import android.os.Process;
 import interaction.CustomAlertDialog;
 
 /**
+ * Classe di gestione scambio dati con il server
+ *
+ * Metododo di utilizzo:
+ * la prima volta che si deve usare va chiamato il metodo init!!!
+ * e ogni volta che cambio activity devo settare il context!!!
+ *
  * Created by Luca on 31/03/2015.
  */
 public class CommunicationManager {
@@ -28,35 +35,29 @@ public class CommunicationManager {
     public static final String SERVER_ADDRESS = "192.168.1.4";
     public static final int SERVER_PORT = 7007;
 
-    private Activity context;
+    private Context context;
 
-    private static CommunicationManager instance;
+    private static CommunicationManager instance = new CommunicationManager();;
     private Socket socket;
     private BufferedReader reader;
     private PrintWriter writer;
 
-    private CommunicationManager(){
+    private CommunicationManager(){}
+
+    public void init() {
+
         try {
-            socket = new Socket(InetAddress.getByName(SERVER_ADDRESS),SERVER_PORT);
+            socket = new Socket(InetAddress.getByName(SERVER_ADDRESS), SERVER_PORT);
             reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-            writer = new PrintWriter(socket.getOutputStream(),true);
+            writer = new PrintWriter(socket.getOutputStream(), true);
         } catch (IOException e) {
             new CustomAlertDialog(context.getString(R.string.dialog_error),
-                    context.getString(R.string.dialog_net_error), context.getString(R.string.dialog_try_again),context);
-            Process.killProcess(Process.myPid()); //sporchissimo
-                    //TODO come diamine si fa se no riesco a usare un activity come contesto?
-            //ma devo comunque avere una sola istanza
-            //e.printStackTrace();
+                    context.getString(R.string.dialog_net_error), context.getString(R.string.dialog_try_again), context);
+            Process.killProcess(Process.myPid());
         }
     }
 
-    public static void init(){
-        //brutto
-        //TODO
-        instance = new CommunicationManager();
-    }
-
-    public void setContext(Activity context) {
+    public void setContext(Context context) {
         this.context = context;
     }
 

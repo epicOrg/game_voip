@@ -2,6 +2,7 @@ package interaction;
 
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.content.Context;
 import android.content.DialogInterface;
 
 import com.gamevoip.epicorg.gamevoip.R;
@@ -14,20 +15,20 @@ public class CustomAlertDialog {
     private String title;
     private String message;
     private String button;
-    private Activity activity;
+    private Context context;
     private AlertDialog alertDialog;
 
-    public CustomAlertDialog(String title, String message, String button, Activity activity) {
+    public CustomAlertDialog(String title, String message, String button, Context context) {
         this.title = title;
         this.message = message;
         this.button = button;
-        this.activity = activity;
+        this.context = context;
         create();
 
     }
 
     private void create() {
-        AlertDialog.Builder builder = new AlertDialog.Builder(activity);
+        AlertDialog.Builder builder = new AlertDialog.Builder(context);
         builder.setMessage(message)
                 .setTitle(title);
         builder.setPositiveButton(button, new DialogInterface.OnClickListener() {

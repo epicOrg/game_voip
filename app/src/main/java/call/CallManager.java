@@ -47,7 +47,6 @@ public class CallManager{
             callRequest.put("service", "Call");
             callRequest.put("callee", callee);
             callRequest.put("caller", caller);
-            callRequest.put("ip", stream.getLocalAddress());
             callRequest.put("port", stream.getLocalPort());
             Log.d("CallRequest", callRequest.toString());
 

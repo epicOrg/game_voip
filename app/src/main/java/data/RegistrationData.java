@@ -1,5 +1,10 @@
 package data;
 
+import android.content.Context;
+import android.view.View;
+
+import java.util.HashMap;
+
 import data.LoginData;
 
 /**
@@ -30,5 +35,11 @@ public class RegistrationData extends LoginData {
 
     public String getConfirmPassword() {
         return confirmPassword;
+    }
+
+    @Override
+    public boolean checkData(Context context, HashMap<Integer, View> views) {
+        boolean value =  super.checkData(context, views);
+        return value;
     }
 }

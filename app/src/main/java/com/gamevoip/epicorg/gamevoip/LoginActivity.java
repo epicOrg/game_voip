@@ -14,6 +14,9 @@ import android.util.Log;
 import android.view.View;
 import android.widget.CheckBox;
 import android.widget.EditText;
+import android.widget.TextView;
+
+import com.google.android.gms.internal.lo;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -24,7 +27,9 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.InetAddress;
 import java.net.Socket;
+import java.util.HashMap;
 
+import communication.CommunicationManager;
 import interaction.CustomAlertDialog;
 import communication.ServerCommunicationReciver;
 import data.LoginData;
@@ -39,28 +44,27 @@ public class LoginActivity extends Activity{
      */
     private UserLoginTask mAuthTask = null;
     private LoginActivity thisActivity = this;
-
-    private EditText mUsernameView;
-    private EditText mPasswordView;
-    private View mProgressView;
-    private View mLoginFormView;
+    private CommunicationManager communicationManager;
+    private HashMap<Integer,View> views = new HashMap<Integer, View>();
     private SharedPreferences myPreferences;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
-
-        // Set up the login form.
-        mUsernameView = (EditText) findViewById(R.id.username);
-        mPasswordView = (EditText) findViewById(R.id.password);
-        mLoginFormView = findViewById(R.id.login_form);
-        mProgressView = findViewById(R.id.login_progress);
+        //inizializzazione communcaztionManager
+        communicationManager = CommunicationManager.getInstance();
+        //communicationManager.init();
+        //communicationManager.setContext(this.getApplicationContext());
+        views.put(R.id.username,(TextView) findViewById(R.id.username));
+        views.put(R.id.password,(TextView)findViewById(R.id.password));
+        views.put(R.id.login_form,findViewById(R.id.login_form));
+        views.put(R.id.login_progress,findViewById(R.id.login_progress));
 
         myPreferences = getPreferences(MODE_PRIVATE);
         if(myPreferences.getBoolean("Remember", false)){
-            mUsernameView.setText(myPreferences.getString("Username","user"));
-            mPasswordView.setText(myPreferences.getString("Password", "pass"));
+            ((TextView)views.get(R.id.username)).setText(myPreferences.getString("Username","user"));
+            ((TextView)views.get(R.id.password)).setText(myPreferences.getString("Password", "pass"));
             Log.d("USER_REMEMBER", myPreferences.getString("Username","user"));
             Log.d("PASS_REMEMBER", myPreferences.getString("Password","pass"));
             attemptLogin(findViewById(R.id.login));
@@ -90,10 +94,10 @@ public class LoginActivity extends Activity{
             return;
         }
 
-        mUsernameView.setError(null);
-        mPasswordView.setError(null);
+        ((TextView)views.get(R.id.username)).setError(null);
+        ((TextView)views.get(R.id.password)).setError(null);
         LoginData loginData = getData();
-        boolean cancel = checkData(loginData);
+        boolean cancel = loginData.checkData(getApplicationContext(), views);
 
         if (cancel) {
             //non fare il login
@@ -104,33 +108,9 @@ public class LoginActivity extends Activity{
         }
     }
 
-    private boolean checkData(LoginData loginData) {
-        boolean cancel = false;
-
-
-        if (!loginData.isPasswordValid()) {
-            mPasswordView.setError(getString(R.string.error_invalid_password));
-            mPasswordView.requestFocus();
-            cancel = true;
-        }
-
-        if (!TextUtils.isEmpty(loginData.getPassword()) && !loginData.isPasswordLognEnought()) {
-            mPasswordView.setError(getString(R.string.error_short_password));
-            mPasswordView.requestFocus();
-            cancel = true;
-        }
-
-        if (TextUtils.isEmpty(loginData.getUsername())) {
-            mUsernameView.setError(getString(R.string.error_field_required));
-            mUsernameView.requestFocus();
-            cancel = true;
-        }
-        return cancel;
-    }
-
     private LoginData getData(){
-        String username = mUsernameView.getText().toString();
-        String password = mPasswordView.getText().toString();
+        String username =  ((TextView)views.get(R.id.username)).getText().toString();
+        String password =  ((TextView)views.get(R.id.password)).getText().toString();
         return new LoginData(username,password);
     }
 
@@ -139,9 +119,9 @@ public class LoginActivity extends Activity{
      */
     @TargetApi(Build.VERSION_CODES.HONEYCOMB_MR2)
     public void showProgress(final boolean show) {
-        // On Honeycomb MR2 we have the ViewPropertyAnimator APIs, which allow
-        // for very easy animations. If available, use these APIs to fade-in
-        // the progress spinner.
+        final TextView mLoginFormView =  (TextView)views.get(R.id.login_form);
+        final TextView mProgressView =  (TextView)views.get(R.id.login_progress);
+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB_MR2) {
             int shortAnimTime = getResources().getInteger(android.R.integer.config_shortAnimTime);
 
