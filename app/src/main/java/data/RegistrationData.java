@@ -1,11 +1,13 @@
 package data;
 
 import android.content.Context;
+import android.text.TextUtils;
 import android.view.View;
+import android.widget.EditText;
+
+import com.gamevoip.epicorg.gamevoip.R;
 
 import java.util.HashMap;
-
-import data.LoginData;
 
 /**
  * Created by Luca on 27/03/2015.
@@ -39,7 +41,25 @@ public class RegistrationData extends LoginData {
 
     @Override
     public boolean checkData(Context context, HashMap<Integer, View> views) {
-        boolean value =  super.checkData(context, views);
-        return value;
+        boolean cancel =  super.checkData(context, views);
+        EditText mConfirmPasswordView = ((EditText)views.get(R.id.confirm_password));
+        EditText mEmailView = ((EditText)views.get(R.id.email));
+
+        if (!passwordsMatches()) {
+            mConfirmPasswordView.setError(context.getString(R.string.error_passwords_different));
+            mConfirmPasswordView.requestFocus();
+            cancel = true;
+        }
+
+        if (TextUtils.isEmpty(getEmail())) {
+            mEmailView.setError(context.getString(R.string.error_field_required));
+            mEmailView.requestFocus();
+            cancel = true;
+        } else if (!isEmailValid()) {
+            mEmailView.setError(context.getString(R.string.error_invalid_email));
+            mEmailView.requestFocus();
+            cancel = true;
+        }
+        return cancel;
     }
 }

@@ -10,6 +10,8 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.net.Socket;
 
+import services.Service;
+
 /**
  * Created by Luca on 28/03/2015.
  */
@@ -17,6 +19,7 @@ public class ServerCommunicationReciver extends Thread{
 
     private BufferedReader reader;
     private Activity context;
+    private RequestElaborator requestElaborator = new RequestElaborator();
 
     public ServerCommunicationReciver(BufferedReader reader) throws IOException{
         this.reader = reader;
@@ -31,6 +34,7 @@ public class ServerCommunicationReciver extends Thread{
                 line = reader.readLine();
                 if(line != null){
                     received = new JSONObject(line);
+                    Service service = requestElaborator.setService(received);
                 }
             }catch (JSONException e) {
                     e.printStackTrace();

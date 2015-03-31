@@ -22,11 +22,11 @@ public class LoginData {
         this.password = password;
     }
 
-    public boolean isPasswordLognEnought(){
+    private boolean isPasswordLognEnought(){
         return password.length() > 7;
     }
 
-    public boolean isPasswordValid(){
+    private boolean isPasswordValid(){
         return password.matches(".*\\d+.*") && password.matches(".*[a-zA-Z]+.*");
     }
 

@@ -13,6 +13,7 @@ import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
+import android.widget.TextView;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -23,7 +24,9 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.InetAddress;
 import java.net.Socket;
+import java.util.HashMap;
 
+import communication.CommunicationManager;
 import interaction.CustomAlertDialog;
 import communication.ServerCommunicationReciver;
 import data.RegistrationData;
@@ -36,40 +39,24 @@ public class RegistrationActivity extends Activity {
     /**
      * Keep track of the login task to ensure we can cancel it if requested.
      */
-    private UserRegistrationTask mAuthTask = null;
     private RegistrationActivity thisActivity = this;
-
-    private EditText mUsernameView;
-    private EditText mEmailView;
-    private EditText mPasswordView;
-    private EditText mConfirmPasswordView;
-    private View mProgressView;
-    private View mLoginFormView;
+    private CommunicationManager communicationManager;
+    private HashMap<Integer,View> views = new HashMap<Integer, View>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_registration);
 
-        // Set up the login form.
-        mEmailView = (EditText) findViewById(R.id.email);
-        mUsernameView = (EditText) findViewById(R.id.username);
-        mConfirmPasswordView = (EditText) findViewById(R.id.confirm_password);
+        communicationManager = CommunicationManager.getInstance();
+        communicationManager.setContext(getApplicationContext());
 
-        mPasswordView = (EditText) findViewById(R.id.password);
-       /** mPasswordView.setOnEditorActionListener(new TextView.OnEditorActionListener() {
-            @Override
-            public boolean onEditorAction(TextView textView, int id, KeyEvent keyEvent) {
-                if (id == R.id.login || id == EditorInfo.IME_NULL) {
-                    attemptLogin();
-                    return true;
-                }
-                return false;
-            }
-        });*/
-
-        mLoginFormView = findViewById(R.id.login_form);
-        mProgressView = findViewById(R.id.login_progress);
+        views.put(R.id.email, findViewById(R.id.email));
+        views.put(R.id.username, findViewById(R.id.username));
+        views.put(R.id.password, findViewById(R.id.password));
+        views.put(R.id.login_form, findViewById(R.id.login_form));
+        views.put(R.id.login_progress,findViewById(R.id.login_progress));
+        views.put(R.id.confirm_password, findViewById(R.id.confirm_password));
     }
 
     /**
@@ -78,70 +65,45 @@ public class RegistrationActivity extends Activity {
      * errors are presented and no actual login attempt is made.
      */
     public void attemptRegistration(View view) {
-        if (mAuthTask != null) {
-            return;
-        }
-
         // Reset errors.
-        mEmailView.setError(null);
-        mPasswordView.setError(null);
+        ((EditText)views.get(R.id.email)).setError(null);
+        ((EditText)views.get(R.id.password)).setError(null);
+        ((EditText)views.get(R.id.username)).setError(null);
+        ((EditText)views.get(R.id.confirm_password)).setError(null);
+
         RegistrationData registrationData = getRegistrationData();
 
-        boolean cancel = checkData(registrationData);
+        boolean cancel = registrationData.checkData(getApplicationContext(),views);
 
         if (cancel) {
             //non fare il login
         } else {
             showProgress(true);
-            mAuthTask = new UserRegistrationTask(registrationData);
-            mAuthTask.execute((Void) null);
+            communicationManager.send(createRequest(registrationData));
         }
     }
 
-    private boolean checkData(RegistrationData registrationData) {
-        boolean cancel = false;
+    private JSONObject createRequest(RegistrationData registrationData) {
 
-
-        if (!registrationData.isPasswordValid()) {
-            mPasswordView.setError(getString(R.string.error_invalid_password));
-            mPasswordView.requestFocus();
-            cancel = true;
-        }
-        if (!TextUtils.isEmpty(registrationData.getPassword()) && !registrationData.isPasswordLognEnought()) {
-            mPasswordView.setError(getString(R.string.error_short_password));
-            mPasswordView.requestFocus();
-            cancel = true;
+        JSONObject request = new JSONObject();
+        try {
+            request.put("service", "REGISTER");
+            request.put("email", registrationData.getEmail());
+            request.put("username", registrationData.getUsername());
+            request.put("password", registrationData.getPassword());
+            Log.d("Richiesta", request.toString());
+        } catch (JSONException e) {
+            //TODO
         }
 
-        if (TextUtils.isEmpty(registrationData.getUsername())) {
-            mUsernameView.setError(getString(R.string.error_field_required));
-            mUsernameView.requestFocus();
-            cancel = true;
-        }
-
-        if (!registrationData.passwordsMatches()) {
-            mConfirmPasswordView.setError(getString(R.string.error_passwords_different));
-            mConfirmPasswordView.requestFocus();
-            cancel = true;
-        }
-
-        if (TextUtils.isEmpty(registrationData.getEmail())) {
-            mEmailView.setError(getString(R.string.error_field_required));
-            mEmailView.requestFocus();
-            cancel = true;
-        } else if (!registrationData.isEmailValid()) {
-            mEmailView.setError(getString(R.string.error_invalid_email));
-            mEmailView.requestFocus();
-            cancel = true;
-        }
-        return cancel;
+        return  request;
     }
 
     private RegistrationData getRegistrationData() {
-        String email = mEmailView.getText().toString();
-        String username = mUsernameView.getText().toString();
-        String password = mPasswordView.getText().toString();
-        String confirmPassword = mConfirmPasswordView.getText().toString();
+        String email = ((EditText)views.get(R.id.email)).getText().toString();
+        String username = ((EditText)views.get(R.id.email)).getText().toString();
+        String password = ((EditText)views.get(R.id.password)).getText().toString();
+        String confirmPassword = ((EditText)views.get(R.id.confirm_password)).getText().toString();
 
         return new RegistrationData(username,email,password,confirmPassword);
     }
@@ -150,9 +112,11 @@ public class RegistrationActivity extends Activity {
      */
     @TargetApi(Build.VERSION_CODES.HONEYCOMB_MR2)
     public void showProgress(final boolean show) {
+        final View mLoginFormView = views.get(R.id.login_form);
+        final View mProgressView = views.get(R.id.login_progress);
+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB_MR2) {
             int shortAnimTime = getResources().getInteger(android.R.integer.config_shortAnimTime);
-
             mLoginFormView.setVisibility(show ? View.GONE : View.VISIBLE);
             mLoginFormView.animate().setDuration(shortAnimTime).alpha(
                     show ? 0 : 1).setListener(new AnimatorListenerAdapter() {
@@ -179,6 +143,7 @@ public class RegistrationActivity extends Activity {
     /**
      * Task asincrono di Registrazione nel quale viene gestita a logica di comunicazione col server
      */
+    /**
     public class UserRegistrationTask extends AsyncTask<Void, Void, Boolean> {
         private RegistrationData registrationData;
         private String error;
@@ -246,5 +211,5 @@ public class RegistrationActivity extends Activity {
             mAuthTask = null;
             showProgress(false);
         }
-    }
+    }*/
 }

@@ -42,7 +42,6 @@ public class LoginActivity extends Activity{
     /**
      * Keep track of the login task to ensure we can cancel it if requested.
      */
-    private UserLoginTask mAuthTask = null;
     private LoginActivity thisActivity = this;
     private CommunicationManager communicationManager;
     private HashMap<Integer,View> views = new HashMap<Integer, View>();
@@ -56,8 +55,8 @@ public class LoginActivity extends Activity{
         communicationManager = CommunicationManager.getInstance();
         //communicationManager.init();
         //communicationManager.setContext(this.getApplicationContext());
-        views.put(R.id.username,(TextView) findViewById(R.id.username));
-        views.put(R.id.password,(TextView)findViewById(R.id.password));
+        views.put(R.id.username, findViewById(R.id.username));
+        views.put(R.id.password, findViewById(R.id.password));
         views.put(R.id.login_form,findViewById(R.id.login_form));
         views.put(R.id.login_progress,findViewById(R.id.login_progress));
 
@@ -90,9 +89,6 @@ public class LoginActivity extends Activity{
     }
 
     public void attemptLogin(View view) {
-        if (mAuthTask != null) {
-            return;
-        }
 
         ((TextView)views.get(R.id.username)).setError(null);
         ((TextView)views.get(R.id.password)).setError(null);
@@ -103,9 +99,21 @@ public class LoginActivity extends Activity{
             //non fare il login
         } else {
             showProgress(true);
-            mAuthTask = new UserLoginTask(loginData);
-            mAuthTask.execute((Void) null);
+            communicationManager.send(createRequest(loginData));
         }
+    }
+
+    private JSONObject createRequest(LoginData loginData) {
+
+        JSONObject request = new JSONObject();
+        try {
+            request.put("service", "LOGIN");
+            request.put("username", loginData.getUsername());
+            request.put("password", loginData.getPassword());
+        } catch (Exception e) {
+            //TODO
+        }
+        return  request;
     }
 
     private LoginData getData(){
@@ -152,7 +160,7 @@ public class LoginActivity extends Activity{
     /**
      * Task asincrono di Login nel quale viene gestita a logica di comunicazione col server
      */
-    public class UserLoginTask extends AsyncTask<Void, Void, Boolean> {
+   /** public class UserLoginTask extends AsyncTask<Void, Void, Boolean> {
 
         private LoginData loginData;
         private String error;
@@ -232,5 +240,5 @@ public class LoginActivity extends Activity{
             mAuthTask = null;
             showProgress(false);
         }
-    }
+    }*/
 }
