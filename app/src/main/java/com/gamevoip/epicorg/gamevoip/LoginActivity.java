@@ -1,38 +1,23 @@
 package com.gamevoip.epicorg.gamevoip;
 
-import android.animation.Animator;
-import android.animation.AnimatorListenerAdapter;
-import android.annotation.TargetApi;
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.os.AsyncTask;
-import android.os.Build;
 import android.os.Bundle;
-import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
 import android.widget.CheckBox;
-import android.widget.EditText;
 import android.widget.TextView;
 
-import com.google.android.gms.internal.lo;
-
-import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
-import java.net.InetAddress;
-import java.net.Socket;
 import java.util.HashMap;
 
-import communication.CommunicationManager;
-import interaction.CustomAlertDialog;
-import communication.ServerCommunicationReciver;
+import communication.ServerCommunicationThread;
 import data.LoginData;
+import interaction.FieldsNames;
+import interaction.ProgressShower;
 
 /**
  * A login screen that offers login via email/password.
@@ -42,44 +27,53 @@ public class LoginActivity extends Activity{
     /**
      * Keep track of the login task to ensure we can cancel it if requested.
      */
-    private LoginActivity thisActivity = this;
-    private CommunicationManager communicationManager;
+    private ServerCommunicationThread serverCommunicationThread;
     private HashMap<Integer,View> views = new HashMap<Integer, View>();
-    private SharedPreferences myPreferences;
+    private SharedPreferences loginPreference;
+    private ProgressShower progressShower;
+    private LoginData loginData;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
-        //inizializzazione communcaztionManager
-        communicationManager = CommunicationManager.getInstance();
-        //communicationManager.init();
-        //communicationManager.setContext(this.getApplicationContext());
-        views.put(R.id.username, findViewById(R.id.username));
-        views.put(R.id.password, findViewById(R.id.password));
-        views.put(R.id.login_form,findViewById(R.id.login_form));
-        views.put(R.id.login_progress,findViewById(R.id.login_progress));
 
-        myPreferences = getPreferences(MODE_PRIVATE);
-        if(myPreferences.getBoolean("Remember", false)){
-            ((TextView)views.get(R.id.username)).setText(myPreferences.getString("Username","user"));
-            ((TextView)views.get(R.id.password)).setText(myPreferences.getString("Password", "pass"));
-            Log.d("USER_REMEMBER", myPreferences.getString("Username","user"));
-            Log.d("PASS_REMEMBER", myPreferences.getString("Password","pass"));
+        //inizializzazione communcaztionManager
+        serverCommunicationThread = ServerCommunicationThread.getInstance();
+        serverCommunicationThread.setContext(getApplicationContext());
+        serverCommunicationThread.start();
+
+        loginPreference = getSharedPreferences("LOGIN_PREF", Context.MODE_PRIVATE);
+
+        getViews();
+
+        //progressShower = new ProgressShower(views.get(R.id.login_progress),views.get(R.id.login_form),
+          //      getResources().getInteger(android.R.integer.config_shortAnimTime));
+
+        if(loginPreference.getBoolean("Remember", false)){
+            ((TextView)views.get(R.id.username)).setText(loginPreference.getString("Username","user"));
+            ((TextView)views.get(R.id.password)).setText(loginPreference.getString("Password", "pass"));
+            Log.d("USER_REMEMBER", loginPreference.getString("Username","user"));
+            Log.d("PASS_REMEMBER", loginPreference.getString("Password","pass"));
             attemptLogin(findViewById(R.id.login));
         }
     }
 
-    public void notRegistered(View view){
+    private void getViews() {
+        views.put(R.id.username, findViewById(R.id.username));
+        views.put(R.id.password, findViewById(R.id.password));
+        views.put(R.id.login_form,findViewById(R.id.login_form));
+        views.put(R.id.login_progress,findViewById(R.id.login_progress));
+    }
 
+    public void notRegistered(View view){
         Intent intent = new Intent(this, RegistrationActivity.class);
         startActivity(intent);
     }
 
     public void rememberMe(View view){
         CheckBox rememberBox = (CheckBox) findViewById(R.id.remeberMeBox);
-        myPreferences = getPreferences(MODE_PRIVATE);
-        SharedPreferences.Editor editor = myPreferences.edit();
+        SharedPreferences.Editor editor = loginPreference.edit();
         Log.d("REMEMBER_ME", String.valueOf(rememberBox.isChecked()));
         if(rememberBox.isChecked())
             editor.putBoolean("Remember" , true);
@@ -92,24 +86,23 @@ public class LoginActivity extends Activity{
 
         ((TextView)views.get(R.id.username)).setError(null);
         ((TextView)views.get(R.id.password)).setError(null);
-        LoginData loginData = getData();
+        loginData = getData();
         boolean cancel = loginData.checkData(getApplicationContext(), views);
 
-        if (cancel) {
-            //non fare il login
-        } else {
-            showProgress(true);
-            communicationManager.send(createRequest(loginData));
+        if (!cancel) {
+            //progressShower.showProgress(true);
+            serverCommunicationThread.send(createRequest());
+            //new LoginTask(loginData,progressShower,getApplicationContext(),loginPreference).execute();
         }
     }
 
-    private JSONObject createRequest(LoginData loginData) {
-
+    private JSONObject createRequest() {
         JSONObject request = new JSONObject();
         try {
-            request.put("service", "LOGIN");
-            request.put("username", loginData.getUsername());
-            request.put("password", loginData.getPassword());
+            request.put(FieldsNames.SERVICE, FieldsNames.LOGIN);
+            request.put(FieldsNames.USERNAME, loginData.getUsername());
+            request.put(FieldsNames.PASSWORD, loginData.getPassword());
+            Log.d("REQUEST", request.toString());
         } catch (Exception e) {
             //TODO
         }
@@ -125,7 +118,7 @@ public class LoginActivity extends Activity{
     /**
      * Mostra una barra di caricamento e nasconde i campi riempiti
      */
-    @TargetApi(Build.VERSION_CODES.HONEYCOMB_MR2)
+    /**@TargetApi(Build.VERSION_CODES.HONEYCOMB_MR2)
     public void showProgress(final boolean show) {
         final TextView mLoginFormView =  (TextView)views.get(R.id.login_form);
         final TextView mProgressView =  (TextView)views.get(R.id.login_progress);
@@ -210,8 +203,8 @@ public class LoginActivity extends Activity{
         protected void onPostExecute(final Boolean success) {
             mAuthTask = null;
             if (success) {
-                if(myPreferences.getBoolean("Remember",false)) {
-                    SharedPreferences.Editor editor = myPreferences.edit();
+                if(loginPreference.getBoolean("Remember",false)) {
+                    SharedPreferences.Editor editor = loginPreference.edit();
                     editor.putString("Username", loginData.getUsername());
                     editor.putString("Password", loginData.getPassword());
                     editor.commit();

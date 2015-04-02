@@ -8,7 +8,7 @@ package interaction;
 public class FieldsNames {
 	
 	//Service fields name
-	public static final String SERVICE = "sercice";
+	public static final String SERVICE = "service";
 	public static final String REGISTER = "register";
 	public static final String LOGIN = "login";
 	public static final String UNKNOWN = "unknown";

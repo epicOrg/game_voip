@@ -1,35 +1,21 @@
 package com.gamevoip.epicorg.gamevoip;
 
-import android.animation.Animator;
-import android.animation.AnimatorListenerAdapter;
-import android.annotation.TargetApi;
 import android.app.Activity;
-import android.content.Intent;
-import android.os.AsyncTask;
 
-import android.os.Build;
 import android.os.Bundle;
-import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
-import android.widget.TextView;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
-import java.net.InetAddress;
-import java.net.Socket;
 import java.util.HashMap;
 
-import communication.CommunicationManager;
-import interaction.CustomAlertDialog;
-import communication.ServerCommunicationReciver;
+import communication.ServerCommunicationThread;
 import data.RegistrationData;
+import interaction.FieldsNames;
+import interaction.ProgressShower;
 
 /**
  * A login screen that offers login via email/password.
@@ -39,18 +25,25 @@ public class RegistrationActivity extends Activity {
     /**
      * Keep track of the login task to ensure we can cancel it if requested.
      */
-    private RegistrationActivity thisActivity = this;
-    private CommunicationManager communicationManager;
+    private ServerCommunicationThread serverCommunicationThread;
     private HashMap<Integer,View> views = new HashMap<Integer, View>();
+    private ProgressShower progressShower;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_registration);
 
-        communicationManager = CommunicationManager.getInstance();
-        communicationManager.setContext(getApplicationContext());
+        serverCommunicationThread = ServerCommunicationThread.getInstance();
+        serverCommunicationThread.setContext(getApplicationContext());
 
+        progressShower = new ProgressShower(views.get(R.id.login_progress),views.get(R.id.login_form),
+                getResources().getInteger(android.R.integer.config_shortAnimTime));
+
+        getViews();
+    }
+
+    private void getViews() {
         views.put(R.id.email, findViewById(R.id.email));
         views.put(R.id.username, findViewById(R.id.username));
         views.put(R.id.password, findViewById(R.id.password));
@@ -78,8 +71,8 @@ public class RegistrationActivity extends Activity {
         if (cancel) {
             //non fare il login
         } else {
-            showProgress(true);
-            communicationManager.send(createRequest(registrationData));
+            progressShower.showProgress(true);
+            serverCommunicationThread.send(createRequest(registrationData));
         }
     }
 
@@ -87,10 +80,10 @@ public class RegistrationActivity extends Activity {
 
         JSONObject request = new JSONObject();
         try {
-            request.put("service", "REGISTER");
-            request.put("email", registrationData.getEmail());
-            request.put("username", registrationData.getUsername());
-            request.put("password", registrationData.getPassword());
+            request.put(FieldsNames.SERVICE, FieldsNames.REGISTER);
+            request.put(FieldsNames.EMAIL, registrationData.getEmail());
+            request.put(FieldsNames.USERNAME, registrationData.getUsername());
+            request.put(FieldsNames.PASSWORD, registrationData.getPassword());
             Log.d("Richiesta", request.toString());
         } catch (JSONException e) {
             //TODO
@@ -110,7 +103,7 @@ public class RegistrationActivity extends Activity {
     /**
      * Mostra una barra di caricamento e nasconde i campi riempiti se la versione è almeno Honeycomb altrimenti nasconde solo i campi
      */
-    @TargetApi(Build.VERSION_CODES.HONEYCOMB_MR2)
+    /**@TargetApi(Build.VERSION_CODES.HONEYCOMB_MR2)
     public void showProgress(final boolean show) {
         final View mLoginFormView = views.get(R.id.login_form);
         final View mProgressView = views.get(R.id.login_progress);

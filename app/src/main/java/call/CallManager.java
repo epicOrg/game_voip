@@ -6,17 +6,11 @@ import android.util.Log;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
-import java.net.InetAddress;
-import java.net.Socket;
 import java.net.SocketException;
 import java.net.UnknownHostException;
 
 import call.audio.AudioCallManager;
-import communication.CommunicationManager;
+import communication.ServerCommunicationThread;
 
 /**
  * Created by Luca on 29/03/2015.
@@ -28,10 +22,10 @@ public class CallManager{
 
     private static CallManager instance = new CallManager();
     private AudioCallManager audioCallManager = AudioCallManager.getInstance();
-    private CommunicationManager communicationManager;
+    private ServerCommunicationThread serverCommunicationThread;
 
     private CallManager(){
-        communicationManager = CommunicationManager.getInstance();
+        //communicationManager = CommunicationManager.getInstance();
     }
 
     public static CallManager getInstance(){
@@ -50,7 +44,7 @@ public class CallManager{
             callRequest.put("port", stream.getLocalPort());
             Log.d("CallRequest", callRequest.toString());
 
-            communicationManager.send(callRequest);
+            serverCommunicationThread.send(callRequest);
             //TODO
             /**if(jsonObject1.getBoolean("value")){
                 stream.associate(InetAddress.getByName(jsonObject1.getString("ip"))

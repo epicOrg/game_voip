@@ -1,7 +1,5 @@
 package call.audio;
 
-import android.content.Context;
-import android.media.AudioManager;
 import android.net.rtp.AudioCodec;
 import android.net.rtp.AudioGroup;
 import android.net.rtp.AudioStream;
@@ -11,7 +9,7 @@ import java.net.InetAddress;
 import java.net.SocketException;
 import java.net.UnknownHostException;
 
-import communication.CommunicationManager;
+import communication.ServerCommunicationThread;
 
 /**
  * Created by Luca on 30/03/2015.
@@ -36,7 +34,7 @@ public class AudioCallManager {
 
     public AudioStream newAudioStream() throws SocketException, UnknownHostException {
         AudioStream audioStream = new AudioStream(InetAddress.getByName(
-                CommunicationManager.getLocalIpAddress()));
+                ServerCommunicationThread.getLocalIpAddress()));
         audioStream.setCodec(AudioCodec.AMR);
         audioStream.setMode(RtpStream.MODE_NORMAL);
         audioStream.join(audioGroup);

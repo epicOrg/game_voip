@@ -1,11 +1,11 @@
 package communication;
 
-import android.app.Activity;
 import android.content.Context;
 import android.util.Log;
 
 import com.gamevoip.epicorg.gamevoip.R;
 
+import org.json.JSONException;
 import org.json.JSONObject;
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -17,35 +17,62 @@ import java.net.NetworkInterface;
 import java.net.Socket;
 import java.net.SocketException;
 import java.util.Enumeration;
-import android.os.Process;
 
 import interaction.CustomAlertDialog;
+import services.Service;
 
 /**
  * Classe di gestione scambio dati con il server
  *
  * Metododo di utilizzo:
- * la prima volta che si deve usare va chiamato il metodo init!!!
+ * All'avvio dell'applicazione va avviato il thread recuperandone l'istanza con l'apposito metodo e
+ * chiamando il metodo run()
  * e ogni volta che cambio activity devo settare il context!!!
  *
  * Created by Luca on 31/03/2015.
  */
-public class CommunicationManager {
+public class ServerCommunicationThread extends Thread{
 
-    public static final String SERVER_ADDRESS = "192.168.1.4";
+    public static final String SERVER_ADDRESS = "192.168.1.131";
     public static final int SERVER_PORT = 7007;
 
     private Context context;
 
-    private static CommunicationManager instance = new CommunicationManager();;
+    private static ServerCommunicationThread instance = new ServerCommunicationThread();
     private Socket socket;
     private BufferedReader reader;
     private PrintWriter writer;
+    private ServiceChooser serviceChooser = new ServiceChooser();
 
-    private CommunicationManager(){}
+    private ServerCommunicationThread(){
+        super();
+    }
+
+    @Override
+    public void run() {
+        init();
+
+        String line;
+        JSONObject received;
+        while(true){
+            try {
+                line = reader.readLine();
+                if(line != null){
+                    received = new JSONObject(line);
+                    Log.d("RESPONSE", line);
+                    Service service = serviceChooser.setService(received);
+                    service.setContext(context);
+                    service.start();
+                }
+            }catch (JSONException e) {
+                e.printStackTrace();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
 
     public void init() {
-
         try {
             socket = new Socket(InetAddress.getByName(SERVER_ADDRESS), SERVER_PORT);
             reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
@@ -53,7 +80,7 @@ public class CommunicationManager {
         } catch (IOException e) {
             new CustomAlertDialog(context.getString(R.string.dialog_error),
                     context.getString(R.string.dialog_net_error), context.getString(R.string.dialog_try_again), context);
-            Process.killProcess(Process.myPid());
+            e.printStackTrace();
         }
     }
 
@@ -78,7 +105,7 @@ public class CommunicationManager {
         return null;
     }
 
-    public static CommunicationManager getInstance() {
+    public static ServerCommunicationThread getInstance() {
         return instance;
     }
 

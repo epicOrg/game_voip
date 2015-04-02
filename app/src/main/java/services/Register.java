@@ -1,7 +1,11 @@
 package services;
 
+import android.content.Context;
+
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import interaction.FieldsNames;
 
 /**
  * @author	Noris
@@ -17,9 +21,8 @@ public class Register implements Service {
 	private String username;
 	private String password;
 	private String email;
-	
-	private JSONObject jsonResponse = new JSONObject();
-	private boolean fieldsAreOk = true;
+
+	private boolean value = true;
 	
 	public Register(JSONObject json) {
 		super();
@@ -27,55 +30,26 @@ public class Register implements Service {
 	}
 	
 	@Override
-	public String start() {
-		
-		try {
-			
-			jsonResponse.put("service", "REGISTER");
-			
-		} catch (JSONException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+	public void start() {
 		readFields();
-		if ( fieldsAreOk )
-			saveFields();
-		return getResponse().toString();
-		
+
+        if(value){
+         //TODO
+        }
 	}
-	
-	private void readFields() {
+
+    @Override
+    public void setContext(Context context) {
+
+    }
+
+    private void readFields() {
 		
 		try {
-			
-			username = json.getString("username");
-			password = json.getString("password");
-			email = json.getString("email");
-			
+            value = json.getBoolean(FieldsNames.NO_ERRORS);
 		} catch (JSONException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-		}
-	}
-	
-	private void saveFields(){
-		//TODO Save fields into database
-	}
-	
-	private JSONObject getResponse() {
-		
-		try {
-
-			if ( fieldsAreOk == true ) {
-				jsonResponse.put("value", "true");
-				return jsonResponse;
-			}
-			
-			return jsonResponse;
-			
-		} catch (JSONException e) {
-			//TODO
-			return new JSONObject();
 		}
 	}
 }

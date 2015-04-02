@@ -1,5 +1,7 @@
 package services;
 
+import android.content.Context;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -11,11 +13,16 @@ import org.json.JSONObject;
 public class Unknown implements Service {
 
 	@Override
-	public String start() {
-		return getResponse().toString();
+	public void start() {
+		//return getResponse().toString();
 	}
-	
-	private JSONObject getResponse() {
+
+    @Override
+    public void setContext(Context context) {
+
+    }
+
+    private JSONObject getResponse() {
 		
 		JSONObject jsonResponse = new JSONObject();
 		
