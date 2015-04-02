@@ -35,7 +35,7 @@ public class RegistrationActivity extends Activity {
         setContentView(R.layout.activity_registration);
 
         serverCommunicationThread = ServerCommunicationThread.getInstance();
-        serverCommunicationThread.setContext(getApplicationContext());
+        serverCommunicationThread.setHandler(null);
 
         progressShower = new ProgressShower(views.get(R.id.login_progress),views.get(R.id.login_form),
                 getResources().getInteger(android.R.integer.config_shortAnimTime));

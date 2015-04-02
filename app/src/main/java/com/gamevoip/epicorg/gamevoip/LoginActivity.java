@@ -1,32 +1,34 @@
 package com.gamevoip.epicorg.gamevoip;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.util.Log;
 import android.view.View;
 import android.widget.CheckBox;
 import android.widget.TextView;
-
 import org.json.JSONObject;
-
 import java.util.HashMap;
-
 import communication.ServerCommunicationThread;
 import data.LoginData;
 import interaction.FieldsNames;
 import interaction.ProgressShower;
+import services.Login;
 
 /**
- * A login screen that offers login via email/password.
+ * Activity du LogIn in cui l'utente inserisce l'username e la password per
+ * essere riconosciuto dal server
+ *
  */
 public class LoginActivity extends Activity{
 
-    /**
-     * Keep track of the login task to ensure we can cancel it if requested.
-     */
+    private LoginActivity thysActivity = this;
     private ServerCommunicationThread serverCommunicationThread;
     private HashMap<Integer,View> views = new HashMap<Integer, View>();
     private SharedPreferences loginPreference;
@@ -40,20 +42,24 @@ public class LoginActivity extends Activity{
 
         //inizializzazione communcaztionManager
         serverCommunicationThread = ServerCommunicationThread.getInstance();
-        serverCommunicationThread.setContext(getApplicationContext());
+        serverCommunicationThread.setHandler(new LoginHandler());
         serverCommunicationThread.start();
 
         loginPreference = getSharedPreferences("LOGIN_PREF", Context.MODE_PRIVATE);
 
         getViews();
+        progressShower = new ProgressShower(views.get(R.id.login_progress),views.get(R.id.login_form),
+                getResources().getInteger(android.R.integer.config_shortAnimTime));
 
-        //progressShower = new ProgressShower(views.get(R.id.login_progress),views.get(R.id.login_form),
-          //      getResources().getInteger(android.R.integer.config_shortAnimTime));
+        // e è attiva la funzione rememberme fai il login direttamente
+        checkRememberMe();
+    }
 
+    private void checkRememberMe() {
         if(loginPreference.getBoolean("Remember", false)){
             ((TextView)views.get(R.id.username)).setText(loginPreference.getString("Username","user"));
             ((TextView)views.get(R.id.password)).setText(loginPreference.getString("Password", "pass"));
-            Log.d("USER_REMEMBER", loginPreference.getString("Username","user"));
+            Log.d("USER_REMEMBER", loginPreference.getString("Username", "user"));
             Log.d("PASS_REMEMBER", loginPreference.getString("Password","pass"));
             attemptLogin(findViewById(R.id.login));
         }
@@ -65,12 +71,17 @@ public class LoginActivity extends Activity{
         views.put(R.id.login_form,findViewById(R.id.login_form));
         views.put(R.id.login_progress,findViewById(R.id.login_progress));
     }
-
+    /**
+     *Passa all'Activity di registrazione, invocato dalll'apposto bottone
+     */
     public void notRegistered(View view){
         Intent intent = new Intent(this, RegistrationActivity.class);
         startActivity(intent);
     }
 
+    /**
+     * Invocato per attivare/disattivare la funzione RememberMe
+     */
     public void rememberMe(View view){
         CheckBox rememberBox = (CheckBox) findViewById(R.id.remeberMeBox);
         SharedPreferences.Editor editor = loginPreference.edit();
@@ -82,6 +93,10 @@ public class LoginActivity extends Activity{
         editor.commit();
     }
 
+    /**
+     * Avvia il Login inviando la richiesta al server
+     */
+
     public void attemptLogin(View view) {
 
         ((TextView)views.get(R.id.username)).setError(null);
@@ -90,9 +105,8 @@ public class LoginActivity extends Activity{
         boolean cancel = loginData.checkData(getApplicationContext(), views);
 
         if (!cancel) {
-            //progressShower.showProgress(true);
+            progressShower.showProgress(true);
             serverCommunicationThread.send(createRequest());
-            //new LoginTask(loginData,progressShower,getApplicationContext(),loginPreference).execute();
         }
     }
 
@@ -108,7 +122,7 @@ public class LoginActivity extends Activity{
         }
         return  request;
     }
-
+    // recupera i dati dai campi di testo
     private LoginData getData(){
         String username =  ((TextView)views.get(R.id.username)).getText().toString();
         String password =  ((TextView)views.get(R.id.password)).getText().toString();
@@ -116,93 +130,16 @@ public class LoginActivity extends Activity{
     }
 
     /**
-     * Mostra una barra di caricamento e nasconde i campi riempiti
+     * Handler che permette la comunicazione tra il Thread di login attivato alla ricezione della risposta dal server e
+     * l'Activity di login stessa ricevendo i risultati del Login
+     *
      */
-    /**@TargetApi(Build.VERSION_CODES.HONEYCOMB_MR2)
-    public void showProgress(final boolean show) {
-        final TextView mLoginFormView =  (TextView)views.get(R.id.login_form);
-        final TextView mProgressView =  (TextView)views.get(R.id.login_progress);
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB_MR2) {
-            int shortAnimTime = getResources().getInteger(android.R.integer.config_shortAnimTime);
-
-            mLoginFormView.setVisibility(show ? View.GONE : View.VISIBLE);
-            mLoginFormView.animate().setDuration(shortAnimTime).alpha(
-                    show ? 0 : 1).setListener(new AnimatorListenerAdapter() {
-                @Override
-                public void onAnimationEnd(Animator animation) {
-                    mLoginFormView.setVisibility(show ? View.GONE : View.VISIBLE);
-                }
-            });
-
-            mProgressView.setVisibility(show ? View.VISIBLE : View.GONE);
-            mProgressView.animate().setDuration(shortAnimTime).alpha(
-                    show ? 1 : 0).setListener(new AnimatorListenerAdapter() {
-                @Override
-                public void onAnimationEnd(Animator animation) {
-                    mProgressView.setVisibility(show ? View.VISIBLE : View.GONE);
-                }
-            });
-        } else {
-            // The ViewPropertyAnimator APIs are not available, so simply show
-            // and hide the relevant UI components.
-            mProgressView.setVisibility(show ? View.VISIBLE : View.GONE);
-            mLoginFormView.setVisibility(show ? View.GONE : View.VISIBLE);
-        }
-    }
-    /**
-     * Task asincrono di Login nel quale viene gestita a logica di comunicazione col server
-     */
-   /** public class UserLoginTask extends AsyncTask<Void, Void, Boolean> {
-
-        private LoginData loginData;
-        private String error;
-
-        public UserLoginTask(LoginData loginData) {
-            this.loginData = loginData;
-        }
+    public class LoginHandler extends Handler {
 
         @Override
-        protected Boolean doInBackground(Void... params) {
-
-            System.out.println(loginData.getUsername());
-            System.out.println(loginData.getPassword());
-
-            JSONObject loginRequest = new JSONObject();
-            try {
-                Socket socket = new Socket(InetAddress.getByName("192.168.1.4"), 7007);
-                PrintWriter printWriter = new PrintWriter(socket.getOutputStream(),true);
-                loginRequest.put("service", "LOGIN");
-                loginRequest.put("username", loginData.getUsername());
-                loginRequest.put("password", loginData.getPassword());
-                printWriter.println(loginRequest.toString());
-                Log.d("Richiesta",loginRequest.toString());
-                BufferedReader reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-                JSONObject response = new JSONObject(reader.readLine());
-                Log.d("Risposta", response.toString());
-
-                reader.close();
-                boolean value = response.getBoolean("value");
-                if(!value){
-                    error = response.getString("Description");
-                }
-                return value;
-
-            } catch (IOException e) {
-                e.printStackTrace();
-                error = getString(R.string.error_server_unreachable);
-                return false;
-            } catch (JSONException e) {
-                e.printStackTrace();
-                error = getString(R.string.error_communication);
-                return false;
-            }
-        }
-
-        @Override
-        protected void onPostExecute(final Boolean success) {
-            mAuthTask = null;
-            if (success) {
+        public void handleMessage(Message msg) {
+            Login.LoginResult result = (Login.LoginResult) msg.obj;
+            if(result.isOk()){
                 if(loginPreference.getBoolean("Remember",false)) {
                     SharedPreferences.Editor editor = loginPreference.edit();
                     editor.putString("Username", loginData.getUsername());
@@ -210,28 +147,28 @@ public class LoginActivity extends Activity{
                     editor.commit();
                     Log.d("REMEMBER", "fields saved");
                 }
-                Intent intent = new Intent(thisActivity, CallActivity.class);
+                Intent intent = new Intent(thysActivity, CallActivity.class);
                 intent.putExtra("Username", loginData.getUsername());
-                intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                startActivity(intent);
-            } else {
-                showErrorDialog();
-                showProgress(false);
-
+                thysActivity.startActivity(intent);
+            }else {
+                String error = result.getError();
+                showAlertDialog(error);
+                progressShower.showProgress(false);
             }
-            showProgress(false);
+            Log.d("RESULT", String.valueOf(result.isOk()));
         }
+    }
 
-        private void showErrorDialog() {
-            new CustomAlertDialog(getString(R.string.dialog_error)
-                    ,error, getString(R.string.dialog_try_again),
-                    thisActivity).show();
-        }
-
-        @Override
-        protected void onCancelled() {
-            mAuthTask = null;
-            showProgress(false);
-        }
-    }*/
+    private void showAlertDialog(String error) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(thysActivity);
+        builder.setMessage(error)
+                .setTitle(getString(R.string.dialog_error));
+        builder.setPositiveButton(getString(R.string.dialog_try_again), new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.cancel();
+            }
+        });
+        builder.create().show();
+    }
 }

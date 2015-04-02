@@ -1,6 +1,7 @@
 package communication;
 
 import android.content.Context;
+import android.os.Handler;
 import android.util.Log;
 
 import com.gamevoip.epicorg.gamevoip.R;
@@ -36,7 +37,7 @@ public class ServerCommunicationThread extends Thread{
     public static final String SERVER_ADDRESS = "192.168.1.131";
     public static final int SERVER_PORT = 7007;
 
-    private Context context;
+    private Handler handler;
 
     private static ServerCommunicationThread instance = new ServerCommunicationThread();
     private Socket socket;
@@ -61,7 +62,7 @@ public class ServerCommunicationThread extends Thread{
                     received = new JSONObject(line);
                     Log.d("RESPONSE", line);
                     Service service = serviceChooser.setService(received);
-                    service.setContext(context);
+                    service.setHandler(handler);
                     service.start();
                 }
             }catch (JSONException e) {
@@ -78,14 +79,14 @@ public class ServerCommunicationThread extends Thread{
             reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
             writer = new PrintWriter(socket.getOutputStream(), true);
         } catch (IOException e) {
-            new CustomAlertDialog(context.getString(R.string.dialog_error),
-                    context.getString(R.string.dialog_net_error), context.getString(R.string.dialog_try_again), context);
+            //new CustomAlertDialog(context.getString(R.string.dialog_error),
+              //      context.getString(R.string.dialog_net_error), context.getString(R.string.dialog_try_again), context);
             e.printStackTrace();
         }
     }
 
-    public void setContext(Context context) {
-        this.context = context;
+    public void setHandler(Handler handler) {
+        this.handler = handler;
     }
 
     public static String getLocalIpAddress() {

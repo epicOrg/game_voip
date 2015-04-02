@@ -1,6 +1,7 @@
 package services;
 
 import android.content.Context;
+import android.os.Handler;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -39,6 +40,10 @@ public class Register implements Service {
 	}
 
     @Override
+    public void setHandler(Handler handler) {
+
+    }
+
     public void setContext(Context context) {
 
     }

@@ -1,6 +1,7 @@
 package services;
 
 import android.content.Context;
+import android.os.Handler;
 
 /**
  * @author	Noris
@@ -13,5 +14,5 @@ public interface Service {
 	 * @return service response message
 	 */
 	public void start();
-    public void setContext(Context context);
+    public void setHandler(Handler handler);
 }
