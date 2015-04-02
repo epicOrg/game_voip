@@ -15,6 +15,9 @@ import android.widget.CheckBox;
 import android.widget.TextView;
 import org.json.JSONObject;
 import java.util.HashMap;
+import java.util.Timer;
+import java.util.TimerTask;
+
 import communication.ServerCommunicationThread;
 import data.LoginData;
 import interaction.FieldsNames;
@@ -40,9 +43,10 @@ public class LoginActivity extends Activity{
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
 
-        //inizializzazione communcaztionManager
+        //inizializzazione communcationManager
         serverCommunicationThread = ServerCommunicationThread.getInstance();
         serverCommunicationThread.setHandler(new LoginHandler());
+        serverCommunicationThread.setPriority(Thread.MAX_PRIORITY);
         serverCommunicationThread.start();
 
         loginPreference = getSharedPreferences("LOGIN_PREF", Context.MODE_PRIVATE);
@@ -52,6 +56,7 @@ public class LoginActivity extends Activity{
                 getResources().getInteger(android.R.integer.config_shortAnimTime));
 
         // e è attiva la funzione rememberme fai il login direttamente
+        System.err.println("AFTEEEEEEEEEEEEEEEEEEER");
         checkRememberMe();
     }
 
@@ -61,6 +66,11 @@ public class LoginActivity extends Activity{
             ((TextView)views.get(R.id.password)).setText(loginPreference.getString("Password", "pass"));
             Log.d("USER_REMEMBER", loginPreference.getString("Username", "user"));
             Log.d("PASS_REMEMBER", loginPreference.getString("Password","pass"));
+            //MODO Molto poco elegante per aspettare che il servercomunication thread sia aviato
+            for (int i = 0; i < 2000
+                    ; i++) {
+                System.out.println("oleeeeeeeeeee");
+            }
             attemptLogin(findViewById(R.id.login));
         }
     }
@@ -153,8 +163,8 @@ public class LoginActivity extends Activity{
             }else {
                 String error = result.getError();
                 showAlertDialog(error);
-                progressShower.showProgress(false);
             }
+            progressShower.showProgress(false);
             Log.d("RESULT", String.valueOf(result.isOk()));
         }
     }

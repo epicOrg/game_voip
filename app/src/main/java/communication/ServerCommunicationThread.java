@@ -67,7 +67,7 @@ public class ServerCommunicationThread extends Thread{
                 }
             }catch (JSONException e) {
                 e.printStackTrace();
-            } catch (IOException e) {
+            }catch (IOException e) {
                 e.printStackTrace();
             }
         }
@@ -75,13 +75,17 @@ public class ServerCommunicationThread extends Thread{
 
     public void init() {
         try {
+            Log.e("WRITER", "ok1");
             socket = new Socket(InetAddress.getByName(SERVER_ADDRESS), SERVER_PORT);
             reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
             writer = new PrintWriter(socket.getOutputStream(), true);
+            Log.e("WRITER", "ok2");
+
         } catch (IOException e) {
             //new CustomAlertDialog(context.getString(R.string.dialog_error),
               //      context.getString(R.string.dialog_net_error), context.getString(R.string.dialog_try_again), context);
             e.printStackTrace();
+            Log.d("WRITER", "not_ok");
         }
     }
 
