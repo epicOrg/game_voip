@@ -92,6 +92,10 @@ public class ServerCommunicationThread extends Thread{
         this.handler = handler;
     }
 
+    public void send(JSONObject object){
+        writer.println(object.toString());
+    }
+
     public static String getLocalIpAddress() {
         try {
             for (Enumeration<NetworkInterface> en = NetworkInterface.getNetworkInterfaces(); en.hasMoreElements();) {
@@ -111,9 +115,5 @@ public class ServerCommunicationThread extends Thread{
 
     public static ServerCommunicationThread getInstance() {
         return instance;
-    }
-
-    public void send(JSONObject object){
-        writer.println(object.toString());
     }
 }

@@ -8,6 +8,7 @@ import org.json.JSONObject;
 
 import java.net.SocketException;
 import java.net.UnknownHostException;
+import java.util.HashMap;
 
 import call.audio.AudioCallManager;
 import communication.ServerCommunicationThread;
@@ -23,9 +24,10 @@ public class CallManager{
     private static CallManager instance = new CallManager();
     private AudioCallManager audioCallManager = AudioCallManager.getInstance();
     private ServerCommunicationThread serverCommunicationThread;
+    private HashMap<String, Call> streams = new HashMap<String,Call>();
 
     private CallManager(){
-        //communicationManager = CommunicationManager.getInstance();
+        serverCommunicationThread = ServerCommunicationThread.getInstance();
     }
 
     public static CallManager getInstance(){
@@ -52,7 +54,7 @@ public class CallManager{
 
             }*/
 
-            
+
         } catch (JSONException e) {
             e.printStackTrace();
         }

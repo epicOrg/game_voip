@@ -8,6 +8,7 @@ import android.net.rtp.RtpStream;
 import java.net.InetAddress;
 import java.net.SocketException;
 import java.net.UnknownHostException;
+import java.util.HashMap;
 
 import communication.ServerCommunicationThread;
 

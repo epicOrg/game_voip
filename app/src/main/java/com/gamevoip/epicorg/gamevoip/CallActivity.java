@@ -15,22 +15,23 @@ import android.widget.EditText;
 import android.widget.Toast;
 
 import call.CallManager;
+import communication.ServerCommunicationThread;
 
 
 public class CallActivity extends ActionBarActivity {
 
     private boolean _doubleBackToExitPressedOnce = false;
     private CallManager callManager;
-    //private CommunicationManager communicationManager;
+    private ServerCommunicationThread serverCommunicationThread;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_call);
         callManager = CallManager.getInstance();
-        //communicationManager = CommunicationManager.getInstance();
+        serverCommunicationThread = ServerCommunicationThread.getInstance();
+        serverCommunicationThread.setHandler(null);
     }
-
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -80,9 +81,6 @@ public class CallActivity extends ActionBarActivity {
         Audio.setMode(AudioManager.MODE_IN_CALL);
         Audio.setSpeakerphoneOn(false);
     }
-
-
-
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
