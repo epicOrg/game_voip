@@ -1,28 +1,14 @@
 package services;
 
-
-
-import android.content.Context;
-import android.content.Intent;
-import android.content.SharedPreferences;
 import android.os.Handler;
 import android.os.Message;
-import android.preference.PreferenceManager;
 import android.util.Log;
-
-import com.gamevoip.epicorg.gamevoip.CallActivity;
-import com.gamevoip.epicorg.gamevoip.LoginActivity;
-import com.gamevoip.epicorg.gamevoip.R;
-
 import org.json.JSONException;
 import org.json.JSONObject;
-
-import interaction.CustomAlertDialog;
 import interaction.FieldsNames;
 
 /**
- * @author	Noris
- * @since	2015-03-26
+ * created by Luca on 31/03/2015
  */
 
 public class Login implements Service {

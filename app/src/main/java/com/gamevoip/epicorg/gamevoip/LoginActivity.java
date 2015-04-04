@@ -15,8 +15,6 @@ import android.widget.CheckBox;
 import android.widget.TextView;
 import org.json.JSONObject;
 import java.util.HashMap;
-import java.util.Timer;
-import java.util.TimerTask;
 
 import communication.ServerCommunicationThread;
 import data.LoginData;
@@ -31,7 +29,7 @@ import services.Login;
  */
 public class LoginActivity extends Activity{
 
-    private LoginActivity thysActivity = this;
+    private LoginActivity thisActivity = this;
     private ServerCommunicationThread serverCommunicationThread;
     private HashMap<Integer,View> views = new HashMap<Integer, View>();
     private SharedPreferences loginPreference;
@@ -67,11 +65,15 @@ public class LoginActivity extends Activity{
             Log.d("USER_REMEMBER", loginPreference.getString("Username", "user"));
             Log.d("PASS_REMEMBER", loginPreference.getString("Password","pass"));
             //MODO Molto poco elegante per aspettare che il servercomunication thread sia aviato
-            for (int i = 0; i < 2000
-                    ; i++) {
-                System.out.println("oleeeeeeeeeee");
-            }
-            attemptLogin(findViewById(R.id.login));
+            Handler handler = new Handler();
+            Log.d("SPLEED", "start");
+            progressShower.showProgress(true);
+            handler.postDelayed(new Runnable() {
+                public void run() {
+                    Log.d("SPLEED", "end");
+                    attemptLogin(findViewById(R.id.login));
+                }
+            }, 2000);
         }
     }
 
@@ -157,9 +159,9 @@ public class LoginActivity extends Activity{
                     editor.commit();
                     Log.d("REMEMBER", "fields saved");
                 }
-                Intent intent = new Intent(thysActivity, CallActivity.class);
+                Intent intent = new Intent(thisActivity, CallActivity.class);
                 intent.putExtra("Username", loginData.getUsername());
-                thysActivity.startActivity(intent);
+                thisActivity.startActivity(intent);
             }else {
                 String error = result.getError();
                 showAlertDialog(error);
@@ -170,7 +172,7 @@ public class LoginActivity extends Activity{
     }
 
     private void showAlertDialog(String error) {
-        AlertDialog.Builder builder = new AlertDialog.Builder(thysActivity);
+        AlertDialog.Builder builder = new AlertDialog.Builder(thisActivity);
         builder.setMessage(error)
                 .setTitle(getString(R.string.dialog_error));
         builder.setPositiveButton(getString(R.string.dialog_try_again), new DialogInterface.OnClickListener() {

@@ -19,7 +19,6 @@ import java.net.Socket;
 import java.net.SocketException;
 import java.util.Enumeration;
 
-import interaction.CustomAlertDialog;
 import services.Service;
 
 /**

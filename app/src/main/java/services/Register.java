@@ -1,29 +1,18 @@
 package services;
 
-import android.content.Context;
 import android.os.Handler;
+import android.os.Message;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import interaction.FieldsNames;
 
-/**
- * @author	Noris
- * @since	2015-03-26
- */
 
 public class Register implements Service {
 	
-	//private DataManager dataManager = DataManager.getIstance();
-	
 	private JSONObject json;
-	
-	private String username;
-	private String password;
-	private String email;
-
-	private boolean value = true;
+	private Handler handler;
 	
 	public Register(JSONObject json) {
 		super();
@@ -33,28 +22,50 @@ public class Register implements Service {
 	@Override
 	public void start() {
 		readFields();
-
-        if(value){
-         //TODO
-        }
 	}
+
+    private void readFields() {
+
+        try {
+            boolean value = json.getBoolean(FieldsNames.NO_ERRORS);
+            RegistrationResult result;
+            if(value) {
+                result = new RegistrationResult(true, null);
+            }else{
+                String error = json.getString("sources");
+                //TODO
+                result = new RegistrationResult(false, error);
+            }
+            Message message= handler.obtainMessage(0,result);
+            message.sendToTarget();
+        } catch (JSONException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+    }
 
     @Override
     public void setHandler(Handler handler) {
-
+        this.handler = handler;
     }
 
-    public void setContext(Context context) {
+    public class RegistrationResult {
 
+        private boolean ok;
+        private String error;
+
+        public RegistrationResult(boolean result, String error) {
+            this.ok = result;
+            this.error = error;
+        }
+
+        public boolean isOk() {
+            return ok;
+        }
+
+        public String getError() {
+            return error;
+        }
     }
 
-    private void readFields() {
-		
-		try {
-            value = json.getBoolean(FieldsNames.NO_ERRORS);
-		} catch (JSONException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-	}
 }
