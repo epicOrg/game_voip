@@ -160,7 +160,8 @@ public class LoginActivity extends Activity{
                     Log.d("REMEMBER", "fields saved");
                 }
                 Intent intent = new Intent(thisActivity, CallActivity.class);
-                intent.putExtra("Username", loginData.getUsername());
+                intent.putExtra(FieldsNames.USERNAME, loginData.getUsername());
+                intent.putExtra(FieldsNames.HASHCODE, result.getHashcode());
                 thisActivity.startActivity(intent);
             }else {
                 String error = result.getError();

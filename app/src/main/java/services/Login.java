@@ -3,6 +3,9 @@ package services;
 import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
+
+import com.google.android.gms.analytics.j;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 import interaction.FieldsNames;
@@ -31,12 +34,14 @@ public class Login implements Service {
             boolean value = json.getBoolean(FieldsNames.NO_ERRORS);
             LoginResult result;
             if(value){
-                result = new LoginResult(true, null);
+                int hashcode = json.getInt(FieldsNames.HASHCODE);
+                result = new LoginResult(true, null, hashcode);
+
             }else {
                 String error = json.getString("sources");
                 //TODO
                 Log.d("ERROR", error);
-                result = new LoginResult(false, error);
+                result = new LoginResult(false, error, 0);
             }
             Message message= handler.obtainMessage(0,result);
             message.sendToTarget();
@@ -55,10 +60,12 @@ public class Login implements Service {
 
         private boolean ok;
         private String error;
+        private int hashcode;
 
-        public LoginResult(boolean result, String error) {
-            this.ok = result;
+        public LoginResult(boolean ok, String error, int hashcode) {
+            this.ok = ok;
             this.error = error;
+            this.hashcode = hashcode;
         }
 
         public boolean isOk() {
@@ -67,6 +74,10 @@ public class Login implements Service {
 
         public String getError() {
             return error;
+        }
+
+        public int getHashcode() {
+            return hashcode;
         }
     }
 }

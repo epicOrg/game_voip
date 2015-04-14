@@ -33,7 +33,7 @@ import services.Service;
  */
 public class ServerCommunicationThread extends Thread{
 
-    public static final String SERVER_ADDRESS = "192.168.1.131";
+    public static final String SERVER_ADDRESS = "10.65.23.253";
     public static final int SERVER_PORT = 7007;
 
     private Handler handler;
@@ -60,6 +60,7 @@ public class ServerCommunicationThread extends Thread{
                 if(line != null){
                     received = new JSONObject(line);
                     Log.d("RESPONSE", line);
+
                     Service service = serviceChooser.setService(received);
                     service.setHandler(handler);
                     service.start();
