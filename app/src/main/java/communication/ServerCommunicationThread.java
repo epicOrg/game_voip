@@ -33,7 +33,7 @@ import services.Service;
  */
 public class ServerCommunicationThread extends Thread{
 
-    public static final String SERVER_ADDRESS = "10.65.23.253";
+    public static final String SERVER_ADDRESS = "192.168.1.6";
     public static final int SERVER_PORT = 7007;
 
     private Handler handler;

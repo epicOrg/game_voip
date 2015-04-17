@@ -1,8 +1,9 @@
 package interaction;
 
 /**
- * @author	Noris
- * @since	2015-03-30
+ * @author Noris
+ * @date 2015/03/30
+ * @version 8
  */
 
 public class FieldsNames {
@@ -42,11 +43,15 @@ public class FieldsNames {
      * ERROR NAMES
      **************************************************************************/
 
+    public static final String ERRORS = "errors";
+
     // Register
     public static final String SHORT = "short";
     public static final String LONG = "long";
     public static final String INVALID_CHAR = "invalidChar";
     public static final String INVALID_DOMAIN = "invalidDomain";
+    public static final String SERVER_ERROR = "server error";
+    public static final String ALREADY_USED = "already used";
 
     // Call
     public static final String OFFLINE = "offline";

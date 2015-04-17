@@ -60,11 +60,11 @@ public class LoginActivity extends Activity{
 
     private void checkRememberMe() {
         if(loginPreference.getBoolean("Remember", false)){
-            ((TextView)views.get(R.id.username)).setText(loginPreference.getString("Username","user"));
-            ((TextView)views.get(R.id.password)).setText(loginPreference.getString("Password", "pass"));
+            ((TextView)views.get(R.id.username)).setText(loginPreference.getString(FieldsNames.USERNAME,"user"));
+            ((TextView)views.get(R.id.password)).setText(loginPreference.getString(FieldsNames.PASSWORD, "pass"));
             Log.d("USER_REMEMBER", loginPreference.getString("Username", "user"));
             Log.d("PASS_REMEMBER", loginPreference.getString("Password","pass"));
-            //MODO Molto poco elegante per aspettare che il servercomunication thread sia aviato
+
             Handler handler = new Handler();
             Log.d("SPLEED", "start");
             progressShower.showProgress(true);
@@ -154,8 +154,8 @@ public class LoginActivity extends Activity{
             if(result.isOk()){
                 if(loginPreference.getBoolean("Remember",false)) {
                     SharedPreferences.Editor editor = loginPreference.edit();
-                    editor.putString("Username", loginData.getUsername());
-                    editor.putString("Password", loginData.getPassword());
+                    editor.putString(FieldsNames.USERNAME, loginData.getUsername());
+                    editor.putString(FieldsNames.PASSWORD, loginData.getPassword());
                     editor.commit();
                     Log.d("REMEMBER", "fields saved");
                 }

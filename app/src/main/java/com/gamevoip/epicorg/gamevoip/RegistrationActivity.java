@@ -101,7 +101,7 @@ public class RegistrationActivity extends Activity {
     // recupera i dati dai campi di testo
     private RegistrationData getRegistrationData() {
         String email = ((EditText)views.get(R.id.email)).getText().toString();
-        String username = ((EditText)views.get(R.id.email)).getText().toString();
+        String username = ((EditText)views.get(R.id.username)).getText().toString();
         String password = ((EditText)views.get(R.id.password)).getText().toString();
         String confirmPassword = ((EditText)views.get(R.id.confirm_password)).getText().toString();
 
@@ -114,8 +114,7 @@ public class RegistrationActivity extends Activity {
         public void handleMessage(Message msg) {
             Register.RegistrationResult result = (Register.RegistrationResult) msg.obj;
                 if(result.isOk()){
-                    Intent intent = new Intent(thisActivity, CallActivity.class);
-                    intent.putExtra("Username", registrationData.getUsername());
+                    Intent intent = new Intent(thisActivity, LoginActivity.class);
                     thisActivity.startActivity(intent);
             }else {
                 String error = result.getError();
