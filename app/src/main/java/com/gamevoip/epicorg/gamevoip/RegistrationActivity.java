@@ -117,6 +117,7 @@ public class RegistrationActivity extends Activity {
             Register.RegistrationResult result = (Register.RegistrationResult) msg.obj;
                 if(result.isOk()){
                     Intent intent = new Intent(thisActivity, LoginActivity.class);
+                    intent.putExtra("ParentRegistration", true);
                     thisActivity.startActivity(intent);
             }else {
                 ArrayList<String> errors = result.getErrors();

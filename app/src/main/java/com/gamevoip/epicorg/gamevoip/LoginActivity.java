@@ -41,18 +41,25 @@ public class LoginActivity extends Activity{
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
 
-        //inizializzazione communcationManager
         serverCommunicationThread = ServerCommunicationThread.getInstance();
         serverCommunicationThread.setHandler(new LoginHandler());
-        serverCommunicationThread.setPriority(Thread.MAX_PRIORITY);
-        serverCommunicationThread.start();
-
-        loginPreference = getSharedPreferences("LOGIN_PREF", Context.MODE_PRIVATE);
-
         getViews();
+        loginPreference = getSharedPreferences("LOGIN_PREF", Context.MODE_PRIVATE);
         progressShower = new ProgressShower(views.get(R.id.login_progress),views.get(R.id.login_form),
                 getResources().getInteger(android.R.integer.config_shortAnimTime));
 
+        Intent intent = getIntent();
+        if(!intent.getBooleanExtra("ParentRegistration", false))
+            init();
+
+
+    }
+
+    private void init() {
+        //inizializzazione communcationManager
+
+        serverCommunicationThread.setPriority(Thread.MAX_PRIORITY);
+        serverCommunicationThread.start();
         // e è attiva la funzione rememberme fai il login direttamente
         System.err.println("AFTEEEEEEEEEEEEEEEEEEER");
         checkRememberMe();
@@ -164,8 +171,7 @@ public class LoginActivity extends Activity{
                 intent.putExtra(FieldsNames.HASHCODE, result.getHashcode());
                 thisActivity.startActivity(intent);
             }else {
-                String error = result.getError();
-                showAlertDialog(error);
+                showAlertDialog(getString(R.string.login_failed));
             }
             progressShower.showProgress(false);
             Log.d("RESULT", String.valueOf(result.isOk()));

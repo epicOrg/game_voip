@@ -5,7 +5,7 @@ import com.gamevoip.epicorg.gamevoip.R;
 import java.util.HashMap;
 
 /**
- * @author	Noris
+ * @author	Luca
  * @since	2015-03-31
  */
 

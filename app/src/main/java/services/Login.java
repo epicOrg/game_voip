@@ -35,13 +35,10 @@ public class Login implements Service {
             LoginResult result;
             if(value){
                 int hashcode = json.getInt(FieldsNames.HASHCODE);
-                result = new LoginResult(true, null, hashcode);
+                result = new LoginResult(true, hashcode);
 
             }else {
-                String error = json.getString("sources");
-                //TODO
-                Log.d("ERROR", error);
-                result = new LoginResult(false, error, 0);
+                result = new LoginResult(false, 0);
             }
             Message message= handler.obtainMessage(0,result);
             message.sendToTarget();
@@ -59,21 +56,15 @@ public class Login implements Service {
     public class LoginResult {
 
         private boolean ok;
-        private String error;
         private int hashcode;
 
-        public LoginResult(boolean ok, String error, int hashcode) {
+        public LoginResult(boolean ok, int hashcode) {
             this.ok = ok;
-            this.error = error;
             this.hashcode = hashcode;
         }
 
         public boolean isOk() {
             return ok;
-        }
-
-        public String getError() {
-            return error;
         }
 
         public int getHashcode() {
