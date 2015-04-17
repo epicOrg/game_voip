@@ -16,12 +16,14 @@ import android.widget.EditText;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 
 import communication.ServerCommunicationThread;
 import data.RegistrationData;
 import interaction.FieldsNames;
 import interaction.ProgressShower;
+import interaction.RegistrationErrorStrings;
 import services.Login;
 import services.Register;
 
@@ -117,8 +119,8 @@ public class RegistrationActivity extends Activity {
                     Intent intent = new Intent(thisActivity, LoginActivity.class);
                     thisActivity.startActivity(intent);
             }else {
-                String error = result.getError();
-                showAlertDialog(error);
+                ArrayList<String> errors = result.getErrors();
+                showAlertDialog(generateErrorString(errors));
             }
             progressShower.showProgress(false);
             Log.d("RESULT", String.valueOf(result.isOk()));
@@ -136,5 +138,14 @@ public class RegistrationActivity extends Activity {
             }
         });
         builder.create().show();
+    }
+
+    private String generateErrorString(ArrayList<String> errors) {
+        String error = "";
+        RegistrationErrorStrings strings = new RegistrationErrorStrings();
+        for (String string:errors){
+            error += getString(strings.getStringIdByError(string)) + "\n";
+        }
+        return error;
     }
 }
