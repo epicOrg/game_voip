@@ -12,6 +12,7 @@ import android.os.Message;
 import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
+import android.widget.Toast;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -19,6 +20,7 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+import communication.NotConnectedExeption;
 import communication.ServerCommunicationThread;
 import data.RegistrationData;
 import interaction.FieldsNames;
@@ -82,7 +84,12 @@ public class RegistrationActivity extends Activity {
 
         if (!cancel){
             progressShower.showProgress(true);
-            serverCommunicationThread.send(createRequest(registrationData));
+            try {
+                serverCommunicationThread.send(createRequest(registrationData));
+            } catch (NotConnectedExeption notConnectedExeption) {
+                Toast.makeText(thisActivity, "NotConnected", Toast.LENGTH_SHORT).show();
+                notConnectedExeption.printStackTrace();
+            }
         }
     }
 

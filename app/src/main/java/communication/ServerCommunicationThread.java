@@ -93,7 +93,9 @@ public class ServerCommunicationThread extends Thread{
         this.handler = handler;
     }
 
-    public void send(JSONObject object){
+    public void send(JSONObject object) throws NotConnectedExeption {
+        if(writer== null)
+            throw new NotConnectedExeption();
         writer.println(object.toString());
     }
 

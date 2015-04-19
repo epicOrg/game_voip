@@ -13,9 +13,12 @@ import android.util.Log;
 import android.view.View;
 import android.widget.CheckBox;
 import android.widget.TextView;
+import android.widget.Toast;
+
 import org.json.JSONObject;
 import java.util.HashMap;
 
+import communication.NotConnectedExeption;
 import communication.ServerCommunicationThread;
 import data.LoginData;
 import interaction.FieldsNames;
@@ -125,7 +128,12 @@ public class LoginActivity extends Activity{
 
         if (!cancel) {
             progressShower.showProgress(true);
-            serverCommunicationThread.send(createRequest());
+            try {
+                serverCommunicationThread.send(createRequest());
+            } catch (NotConnectedExeption notConnectedExeption) {
+                Toast.makeText(thisActivity,"NotConnected",Toast.LENGTH_SHORT).show();
+                notConnectedExeption.printStackTrace();
+            }
         }
     }
 
